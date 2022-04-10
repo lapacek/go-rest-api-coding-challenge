@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"github.com/lapacek/simple-api-example/internal/common"
 	"time"
@@ -23,7 +24,18 @@ func NewModel(repository *data.Repository) *Model {
 
 func (m *Model) Open() bool {
 
-	return m.loadDestinations()
+	failed := false
+
+	fmt.Println("Model is starting...")
+	defer func() {
+		if !failed {
+			fmt.Println("Model started")
+		}
+	}()
+
+	failed = m.loadDestinations()
+
+	return failed
 }
 
 func (m *Model) Close() bool {
@@ -33,10 +45,9 @@ func (m *Model) Close() bool {
 
 func (m *Model) loadDestinations() bool {
 
-	dest := m.repository.GetDestinations()
-
-	if dest == nil {
-		fmt.Printf("Cannot load destinations")
+	dest, err := m.repository.GetDestinations(context.TODO())
+	if err != nil {
+		fmt.Printf("Cannot load destinations, err(%v)\n", err)
 
 		return false
 	}
@@ -50,16 +61,19 @@ func (m *Model) SpaceXLaunches() *[]SpaceXLaunch {
 	return nil
 }
 
-func (m *Model) AllBookings() *[]Booking {
+func (m *Model) AllBookings() (*[]Booking, error) {
 
-	bookings := m.repository.GetBookings()
+	bookings, err := m.repository.GetBookings(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf("Cannot retrieve bookings, err(%v)\n", err)
+	}
 	results := make([]Booking, len(*bookings), 0)
 
 	for _, b := range *bookings {
 		results = append(results, Booking{Booking : b})
 	}
 
-	return &results
+	return &results, nil
 }
 
 func (m *Model) BookTicket(booking *Booking) error {
@@ -76,10 +90,17 @@ func (m *Model) BookTicket(booking *Booking) error {
 		return fmt.Errorf("Launch date(%v) should be higher than/equal to today", booking.LaunchDate)
 	}
 
-	launch := m.repository.GetLaunch(launchDate)
+	launch, err := m.repository.GetLaunch(context.TODO(), launchDate)
+	if err != nil {
+		fmt.Printf(
+			"Cannot retrieve launch for launch date(%v), err(%v)\n",
+			launchDate.Format(common.DateLayout),
+			err,
+			)
+	}
 	if launch != nil {
 		if launch.LaunchpadID == booking.LaunchpadID {
-			err := m.repository.BookTicket(booking.Booking)
+			err := m.repository.BookTicket(context.TODO(), booking.Booking)
 			if err != nil {
 				fmt.Printf("Booking failed, err(%v)\n", err)
 
@@ -90,7 +111,10 @@ func (m *Model) BookTicket(booking *Booking) error {
 		}
 	}
 
-	launches := m.repository.GetLaunches(GetStartOfWeek(launchDate), GetEndOfWeek(launchDate))
+	launches, err := m.repository.GetLaunches(context.TODO(), GetStartOfWeek(launchDate), GetEndOfWeek(launchDate))
+	if err != nil {
+		return fmt.Errorf("Cannot retrieve launches, err(%v)\n", err)
+	}
 	for _, l := range *launches {
 		if l.DestinationID == booking.DestinationID {
 			return fmt.Errorf(
@@ -124,7 +148,14 @@ func (m *Model) BookTicket(booking *Booking) error {
 		}
 	}
 
-	err = m.repository.BookTicket(booking.Booking)
+	err = m.repository.CreateLaunch(context.TODO(), booking.Booking)
+	if err != nil {
+		fmt.Printf("Cannot book ticket, err(%v)\n", err)
+
+		return fmt.Errorf("Unexpected error, please contact support")
+	}
+
+	err = m.repository.BookTicket(context.TODO(), booking.Booking)
 	if err != nil {
 		fmt.Printf("Cannot book ticket, err(%v)\n", err)
 
@@ -136,23 +167,4 @@ func (m *Model) BookTicket(booking *Booking) error {
 
 func (m *Model) DeleteBooking() {
 
-}
-
-func GetStartOfWeek(date time.Time) time.Time {
-
-	weekday := date.Weekday()
-
-	year, month, day := date.Date()
-	dateWithDeletedTime := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
-	return dateWithDeletedTime.Add(-1 * (time.Duration(weekday) - 1) * 24 * time.Hour)
-}
-
-func GetEndOfWeek(date time.Time) time.Time {
-
-	weekday := date.Weekday()
-
-	year, month, day := date.Date()
-	dateWithDeletedTime := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
-
-	return dateWithDeletedTime.Add((7 - time.Duration(weekday)) * 24 * time.Hour)
 }

@@ -8,4 +8,6 @@ type Booking struct {
 	LaunchpadID   string
 	DestinationID string
 	LaunchDate    string
+
+	LaunchID      string
 }

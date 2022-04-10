@@ -1,6 +1,9 @@
 package data
 
 import (
+	"context"
+	"fmt"
+	"github.com/lapacek/simple-api-example/internal/common"
 	"time"
 
 	"github.com/lapacek/simple-api-example/internal/db"
@@ -27,29 +30,134 @@ func (r *Repository) Close() bool {
 	return true
 }
 
-func (r *Repository) BookTicket(booking Booking) error {
+func (r *Repository) CreateLaunch(ctx context.Context, booking Booking) error {
 
-	
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		fmt.Println("Cannot begin transaction")
 
-	return nil
-}
+		return err
+	}
 
-func (r *Repository) GetDestinations() *[]Destination {
-
-	return nil
-}
-
-func (r *Repository) GetBookings() *[]Booking {
+	tx.Exec(ctx, INSERT_LAUNCH, booking.LaunchID, booking.DestinationID, booking.LaunchDate)
+	tx.Commit(ctx)
 
 	return nil
 }
 
-func (r *Repository) GetLaunches(from, to time.Time) *[]Launch {
+func (r *Repository) BookTicket(ctx context.Context, booking Booking) error {
+
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		fmt.Println("Cannot begin transaction")
+
+		return err
+	}
+
+	tx.Exec(ctx, INSERT_TICKET, booking.LaunchID, booking.FirstName, booking.LastName, booking.Gender, booking.Birthday)
+	tx.Commit(ctx)
 
 	return nil
 }
 
-func (r *Repository) GetLaunch(date time.Time) *Launch {
+func (r *Repository) GetDestinations(ctx context.Context) (*[]Destination, error) {
 
-	return nil
+	rows, err := r.db.Query(ctx, SELECT_DESTINATIONS)
+	if err != nil {
+		fmt.Println("Cannot retrieve destinations")
+
+		return nil, err
+	}
+
+	results := make([]Destination, 0)
+
+	for rows.Next() {
+		var destination Destination
+
+		err := rows.Scan(destination)
+		if err != nil {
+			fmt.Println("Cannot scan destination from db row")
+
+			return nil, err
+		}
+
+		results = append(results, destination)
+	}
+
+	return &results, nil
+}
+
+func (r *Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
+
+	rows, err := r.db.Query(ctx, SELECT_BOOKINGS)
+	if err != nil {
+		fmt.Println("Cannot retrieve bookings")
+
+		return nil, err
+	}
+
+	results := make([]Booking, 0)
+
+	for rows.Next() {
+		var item Booking
+
+		err := rows.Scan(item)
+		if err != nil {
+			fmt.Println("Cannot scan booking from db row")
+
+			return nil, err
+		}
+
+		results = append(results, item)
+	}
+
+	return &results, nil
+}
+
+func (r *Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]Launch, error) {
+
+	start := from.Format(common.DateLayout)
+	end := to.Format(common.DateLayout)
+
+	rows, err := r.db.Query(ctx, SELECT_LAUNCHES, start, end)
+	if err != nil {
+		fmt.Println("Cannot retrieve launches")
+
+		return nil, err
+	}
+
+	results := make([]Launch, 0)
+
+	for rows.Next() {
+		var item Launch
+
+		err := rows.Scan(item)
+		if err != nil {
+			fmt.Println("Cannot scan launch from db row")
+
+			return nil, err
+		}
+
+		results = append(results, item)
+	}
+
+	return &results, nil
+}
+
+func (r *Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, error) {
+
+	launchDate := date.Format(common.DateLayout)
+
+	row := r.db.QueryRow(ctx, SELECT_LAUNCH, launchDate)
+
+	var item Launch
+
+	err := row.Scan(item)
+	if err != nil {
+		fmt.Println("Cannot scan launch from db row")
+
+		return nil, err
+	}
+
+	return &item, nil
 }
