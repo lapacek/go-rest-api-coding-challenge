@@ -14,6 +14,18 @@ const (
 	pattern        = "postgres://%s:%s@%s:%s/%s"
 )
 
+type Rows interface {
+	pgx.Rows
+}
+
+type Row interface {
+	pgx.Row
+}
+
+type Tx interface {
+	pgx.Tx
+}
+
 type DB struct {
 	connStr string
 	opened  bool
@@ -68,6 +80,26 @@ func (db *DB) Close() bool {
 	db.opened = false
 
 	return true
+}
+
+func (db *DB) Query(ctx context.Context, sql string, args ...interface{}) (Rows, error) {
+	return db.conn.Query(ctx, sql, args...)
+}
+
+func (db *DB) QueryRow(ctx context.Context, sql string, args ...interface{}) Row {
+	return db.conn.QueryRow(ctx, sql, args...)
+}
+
+func (db *DB) Begin(ctx context.Context) (Tx, error) {
+	return db.conn.Begin(ctx)
+}
+
+func (db *DB) Rollback(ctx context.Context, tx Tx) error {
+	return tx.Rollback(ctx)
+}
+
+func (db *DB) Commit(ctx context.Context, tx Tx) error {
+	return tx.Commit(ctx)
 }
 
 func (db *DB) init() bool {

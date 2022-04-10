@@ -19,8 +19,6 @@ func NewRepository(db *db.DB) *Repository {
 
 func (r *Repository) Open() bool {
 
-
-
 	return true
 }
 
@@ -30,6 +28,8 @@ func (r *Repository) Close() bool {
 }
 
 func (r *Repository) BookTicket(booking Booking) error {
+
+	
 
 	return nil
 }
