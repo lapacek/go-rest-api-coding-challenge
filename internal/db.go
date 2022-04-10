@@ -1,17 +1,16 @@
 package internal
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
 	"github.com/gookit/config/v2"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 )
 
 const (
 	anonymizedPass = "XXXXX"
-	driver         = "postgres"
-	pattern        = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
+	pattern        = "postgres://%s:%s@%s:%s/%s"
 )
 
 type DB struct {
@@ -19,7 +18,7 @@ type DB struct {
 	opened  bool
 
 	conf *config.Config
-	conn *sql.DB
+	conn *pgx.Conn
 }
 
 func NewDB(conf *config.Config) *DB {
@@ -38,9 +37,9 @@ func (db *DB) Open() bool {
 	}
 
 	var err error
-	db.conn, err = sql.Open(driver, db.connStr)
+	db.conn, err = pgx.Connect(context.Background(), db.connStr)
 	if err != nil {
-		fmt.Printf("Cannot open database, err(%v)\n", err)
+		fmt.Printf("Cannot connect to database, err(%v)\n", err)
 
 		return false
 	}
@@ -59,7 +58,7 @@ func (db *DB) Close() bool {
 		return true
 	}
 
-	err := db.conn.Close()
+	err := db.conn.Close(context.Background())
 	if err != nil {
 		fmt.Printf("Cannot close database, err(%v)\n", err)
 
@@ -94,23 +93,31 @@ func (db *DB) init() bool {
 
 func (db *DB) ping() bool {
 
+	fmt.Println("Pinging db...")
+
 	if !db.opened {
 		fmt.Println("Cannot ping closed connection")
 
 		return false
 	}
 
-	err := db.conn.Ping()
+	err := db.conn.Ping(context.Background())
 	if err != nil {
 		fmt.Printf("Ping failed, err(%v)\n", err)
 
 		return false
 	}
 
+	fmt.Println("Ping was successful")
+
 	return true
 }
 
+// Builds correct connection string
+//
+// Pattern should be filled this way:
+// "postgres://username:password@localhost:5432/database_name"
 func createConnStr(host, port, user, pass, name string) string {
 
-	return fmt.Sprintf(pattern, host, port, user, pass, name)
+	return fmt.Sprintf(pattern, user, pass, host, port, name)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gookit/config/v2"
-
 	"github.com/lapacek/simple-api-example/internal"
 )
 
