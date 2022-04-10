@@ -21,6 +21,13 @@ WORKDIR /app/cmd
 # Download all the dependencies
 RUN go get -d -v ./...
 
+WORKDIR /app/internal
+
+# Run tests
+RUN go test -v ./...
+
+WORKDIR /app/cmd
+
 # Install the package
 RUN go install -v ./...
 

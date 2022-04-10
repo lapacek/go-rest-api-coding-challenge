@@ -8,3 +8,7 @@ const (
 	PGHost = "DATABASE_HOST"
 	PGPort = "DATABASE_PORT"
 )
+
+const (
+	DateLayout = "2006-01-02"
+)
