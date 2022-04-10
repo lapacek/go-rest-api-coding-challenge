@@ -33,6 +33,7 @@ services:
     volumes:
       - ./pg_data:/var/lib/postgresql/data
       - ./db/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./db/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
     command: postgres -c listen_addresses='*'
     networks:
       - learning
