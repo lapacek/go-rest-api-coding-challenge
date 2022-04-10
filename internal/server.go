@@ -2,13 +2,14 @@ package internal
 
 import (
 	"fmt"
+	"github.com/lapacek/simple-api-example/internal/db"
 
 	"github.com/gookit/config/v2"
 )
 
 type Server struct {
 	conf  *config.Config
-	db    *DB
+	db    *db.DB
 	model *Model
 }
 
@@ -44,7 +45,7 @@ func (s *Server) Open() bool {
 		}
 	}()
 
-	s.db = NewDB(s.conf)
+	s.db = db.NewDB(s.conf)
 
 	if !s.db.Open() {
 		fmt.Println("Cannot open database")

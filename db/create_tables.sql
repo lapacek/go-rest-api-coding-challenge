@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS ticket (
     launch_id INT NOT NULL,
     first_name varchar(200) NOT NULL,
     last_name varchar(200) NOT NULL,
+    gender varchar(200) NOT NULL,
     birthday DATE NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_launch

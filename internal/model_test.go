@@ -2,6 +2,7 @@ package internal_test
 
 import (
 	"fmt"
+	"github.com/lapacek/simple-api-example/internal/common"
 	"testing"
 	"time"
 
@@ -11,12 +12,12 @@ import (
 func Test_GetStartOfWeek(t *testing.T) {
 
 	input := "2022-04-13"
-	date, err := time.Parse(internal.DateLayout, input)
+	date, err := time.Parse(common.DateLayout, input)
 	if err != nil {
 		fmt.Printf("Time parsing failed, err(%v)", err)
 	}
 
-	result := internal.GetStartOfWeek(date)
+	result := internal.GetStartOfWeek(date).Format(common.DateLayout)
 
 	expected := "2022-04-11"
 	if expected != result {
@@ -27,12 +28,12 @@ func Test_GetStartOfWeek(t *testing.T) {
 func Test_GetEndOfWeek(t *testing.T) {
 
 	input := "2022-04-13"
-	date, err := time.Parse(internal.DateLayout, input)
+	date, err := time.Parse(common.DateLayout, input)
 	if err != nil {
 		fmt.Printf("Time parsing failed, err(%v)", err)
 	}
 
-	result := internal.GetEndOfWeek(date)
+	result := internal.GetEndOfWeek(date).Format(common.DateLayout)
 
 	expected := "2022-04-17"
 	if expected != result {
@@ -41,5 +42,5 @@ func Test_GetEndOfWeek(t *testing.T) {
 }
 
 func Test_IsTicketAvailable(t *testing.T) {
-	
+
 }

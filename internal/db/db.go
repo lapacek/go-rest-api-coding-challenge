@@ -1,8 +1,9 @@
-package internal
+package db
 
 import (
 	"context"
 	"fmt"
+	"github.com/lapacek/simple-api-example/internal/common"
 
 	"github.com/gookit/config/v2"
 	"github.com/jackc/pgx/v4"
@@ -72,20 +73,20 @@ func (db *DB) Close() bool {
 func (db *DB) init() bool {
 
 	connStrWoPass := createConnStr(
-		db.conf.String(PGHost),
-		db.conf.String(PGPort),
-		db.conf.String(PGUser),
+		db.conf.String(common.PGHost),
+		db.conf.String(common.PGPort),
+		db.conf.String(common.PGUser),
 		anonymizedPass,
-		db.conf.String(PGName),
+		db.conf.String(common.PGName),
 	)
 	fmt.Printf("Connection string(%v)\n", connStrWoPass)
 
 	db.connStr = createConnStr(
-		db.conf.String(PGHost),
-		db.conf.String(PGPort),
-		db.conf.String(PGUser),
-		db.conf.String(PGPass),
-		db.conf.String(PGName),
+		db.conf.String(common.PGHost),
+		db.conf.String(common.PGPort),
+		db.conf.String(common.PGUser),
+		db.conf.String(common.PGPass),
+		db.conf.String(common.PGName),
 	)
 
 	return true
