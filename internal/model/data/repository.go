@@ -160,3 +160,19 @@ func (r Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, err
 
 	return &item, nil
 }
+
+func (r Repository) GetLaunchpad(ctx context.Context, launchpadId string) (*LaunchPad, error) {
+
+	row := r.db.QueryRow(ctx, SELECT_LAUNCHPAD, launchpadId)
+
+	var item LaunchPad
+
+	err := row.Scan(&item)
+	if err != nil {
+		fmt.Println("Cannot scan launchpad from db row")
+
+		return nil, err
+	}
+
+	return &item, nil
+}

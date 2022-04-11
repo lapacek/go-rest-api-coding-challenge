@@ -13,11 +13,13 @@ type Model struct {
 	destinations *[]data.Destination
 
 	repository data.RepositoryIface
+	spacexClient SpaceXClientIface
 }
 
-func NewModel(repository data.RepositoryIface) *Model {
+func NewModel(repository data.RepositoryIface, client SpaceXClientIface) *Model {
 	model := Model{}
 	model.repository = repository
+	model.spacexClient = client
 
 	return &model
 }
@@ -43,22 +45,8 @@ func (m *Model) Close() bool {
 	return true
 }
 
-func (m *Model) loadDestinations() bool {
-
-	dest, err := m.repository.GetDestinations(context.TODO())
-	if err != nil {
-		fmt.Printf("Cannot load destinations, err(%v)\n", err)
-
-		return false
-	}
-
-	m.destinations = dest
-
-	return true
-}
-
-func (m *Model) SpaceXLaunches() *[]SpaceXLaunch {
-	return nil
+func (m *Model) SpaceXLaunches() (*[]SpaceXLaunch, error) {
+	return m.spacexClient.GetLaunches(context.TODO())
 }
 
 func (m *Model) AllBookings() (*[]Booking, error) {
@@ -67,7 +55,7 @@ func (m *Model) AllBookings() (*[]Booking, error) {
 	if err != nil {
 		fmt.Printf("Cannot retrieve bookings, err(%v)\n", err)
 
-		return nil, RepositoryError
+		return nil, DataLayerError
 	}
 	results := make([]Booking, len(*bookings), 0)
 
@@ -104,7 +92,7 @@ func (m *Model) BookTicket(booking *Booking) error {
 			err,
 			)
 
-		return RepositoryError
+		return DataLayerError
 	}
 	if launch != nil {
 		if launch.LaunchpadID == booking.LaunchpadID {
@@ -124,16 +112,22 @@ func (m *Model) BookTicket(booking *Booking) error {
 	if err != nil {
 		fmt.Printf("Cannot retrieve launches, err(%v)\n", err)
 
-		return RepositoryError
+		return DataLayerError
 	}
+
 	for _, l := range *launches {
-		if l.DestinationID == booking.DestinationID {
+		if m.isColliding(&l, booking) {
 
 			return DestinationUnavailableError
 		}
 	}
 
-	spacexLaunches := m.SpaceXLaunches()
+	spacexLaunches, err := m.SpaceXLaunches()
+	if err != nil {
+		fmt.Printf("Cannot retrieve data from the SpaceX API, err(%v)", err)
+
+		return DataLayerError
+	}
 	for _, sxl := range *spacexLaunches {
 		if sxl.Upcomming {
 
@@ -150,8 +144,15 @@ func (m *Model) BookTicket(booking *Booking) error {
 				return err
 			}
 
-			if sxlLaunchDate == launchDate {
-				if sxl.LaunchpadID == booking.LaunchpadID {
+			lauchpad, err := m.repository.GetLaunchpad(context.TODO(), booking.LaunchpadID)
+			if err != nil {
+				fmt.Printf("Cannot retrieve launchpad for launchpadId(%v), err(%v)\n", booking.LaunchpadID, err)
+
+				return DataLayerError
+			}
+
+			if m.compareSpacexLaunchDate(sxlLaunchDate, launchDate) {
+				if sxl.LaunchpadID == lauchpad.IDSpaceX {
 
 					return LaunchpadUsedBySpaceXError
 				}
@@ -179,3 +180,29 @@ func (m *Model) BookTicket(booking *Booking) error {
 func (m *Model) DeleteBooking() {
 
 }
+
+func (m *Model) loadDestinations() bool {
+
+	dest, err := m.repository.GetDestinations(context.TODO())
+	if err != nil {
+		fmt.Printf("Cannot load destinations, err(%v)\n", err)
+
+		return false
+	}
+
+	m.destinations = dest
+
+	return true
+}
+
+func (m *Model) isColliding(l *data.Launch, b *Booking) bool {
+
+	return l.DestinationID == b.DestinationID && l.LaunchpadID == b.LaunchpadID
+}
+
+func (m *Model) compareSpacexLaunchDate(spacexLaunchDate, launchDate time.Time) bool {
+
+	return spacexLaunchDate.Format(common.DateLayout) == launchDate.Format(common.DateLayout)
+}
+
+
