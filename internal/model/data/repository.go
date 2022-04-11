@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/lapacek/simple-api-example/internal/common"
+	"github.com/lapacek/simple-api-example/internal/lib/db"
 	"time"
-
-	"github.com/lapacek/simple-api-example/internal/db"
 )
 
 type Repository struct {
@@ -30,7 +29,7 @@ func (r *Repository) Close() bool {
 	return true
 }
 
-func (r *Repository) CreateLaunch(ctx context.Context, booking Booking) error {
+func (r Repository) CreateLaunch(ctx context.Context, booking Booking) error {
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -45,7 +44,7 @@ func (r *Repository) CreateLaunch(ctx context.Context, booking Booking) error {
 	return nil
 }
 
-func (r *Repository) BookTicket(ctx context.Context, booking Booking) error {
+func (r Repository) BookTicket(ctx context.Context, booking Booking) error {
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
@@ -60,7 +59,7 @@ func (r *Repository) BookTicket(ctx context.Context, booking Booking) error {
 	return nil
 }
 
-func (r *Repository) GetDestinations(ctx context.Context) (*[]Destination, error) {
+func (r Repository) GetDestinations(ctx context.Context) (*[]Destination, error) {
 
 	rows, err := r.db.Query(ctx, SELECT_DESTINATIONS)
 	if err != nil {
@@ -72,22 +71,22 @@ func (r *Repository) GetDestinations(ctx context.Context) (*[]Destination, error
 	results := make([]Destination, 0)
 
 	for rows.Next() {
-		var destination Destination
+		var item Destination
 
-		err := rows.Scan(destination)
+		err := rows.Scan(&item)
 		if err != nil {
 			fmt.Println("Cannot scan destination from db row")
 
 			return nil, err
 		}
 
-		results = append(results, destination)
+		results = append(results, item)
 	}
 
 	return &results, nil
 }
 
-func (r *Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
+func (r Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
 
 	rows, err := r.db.Query(ctx, SELECT_BOOKINGS)
 	if err != nil {
@@ -101,7 +100,7 @@ func (r *Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
 	for rows.Next() {
 		var item Booking
 
-		err := rows.Scan(item)
+		err := rows.Scan(&item)
 		if err != nil {
 			fmt.Println("Cannot scan booking from db row")
 
@@ -114,7 +113,7 @@ func (r *Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
 	return &results, nil
 }
 
-func (r *Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]Launch, error) {
+func (r Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]Launch, error) {
 
 	start := from.Format(common.DateLayout)
 	end := to.Format(common.DateLayout)
@@ -131,7 +130,7 @@ func (r *Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]La
 	for rows.Next() {
 		var item Launch
 
-		err := rows.Scan(item)
+		err := rows.Scan(&item)
 		if err != nil {
 			fmt.Println("Cannot scan launch from db row")
 
@@ -144,7 +143,7 @@ func (r *Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]La
 	return &results, nil
 }
 
-func (r *Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, error) {
+func (r Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, error) {
 
 	launchDate := date.Format(common.DateLayout)
 
@@ -152,7 +151,7 @@ func (r *Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, er
 
 	var item Launch
 
-	err := row.Scan(item)
+	err := row.Scan(&item)
 	if err != nil {
 		fmt.Println("Cannot scan launch from db row")
 

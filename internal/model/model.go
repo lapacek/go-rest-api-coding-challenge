@@ -1,21 +1,21 @@
-package internal
+package model
 
 import (
 	"context"
 	"fmt"
-	"github.com/lapacek/simple-api-example/internal/common"
 	"time"
 
-	"github.com/lapacek/simple-api-example/internal/data"
+	"github.com/lapacek/simple-api-example/internal/model/data"
+	"github.com/lapacek/simple-api-example/internal/common"
 )
 
 type Model struct {
 	destinations *[]data.Destination
 
-	repository *data.Repository
+	repository data.RepositoryIface
 }
 
-func NewModel(repository *data.Repository) *Model {
+func NewModel(repository data.RepositoryIface) *Model {
 	model := Model{}
 	model.repository = repository
 

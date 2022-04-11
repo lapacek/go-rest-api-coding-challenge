@@ -2,7 +2,8 @@ package internal
 
 import (
 	"fmt"
-	"github.com/lapacek/simple-api-example/internal/db"
+	"github.com/lapacek/simple-api-example/internal/lib/db"
+	model2 "github.com/lapacek/simple-api-example/internal/model"
 
 	"github.com/gookit/config/v2"
 )
@@ -10,7 +11,7 @@ import (
 type Server struct {
 	conf  *config.Config
 	db    *db.DB
-	model *Model
+	model *model2.Model
 }
 
 func NewServer(conf *config.Config) *Server {
