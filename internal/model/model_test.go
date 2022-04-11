@@ -2,63 +2,64 @@ package model_test
 
 import (
 	"context"
-	"github.com/lapacek/simple-api-example/internal/model"
-	data2 "github.com/lapacek/simple-api-example/internal/model/data"
 	"testing"
 	"time"
+
+	"github.com/lapacek/simple-api-example/internal/model"
+	"github.com/lapacek/simple-api-example/internal/model/data"
 )
 
 // TODO: launch dates should be generated
 
 type RepositoryMock struct {
-	Bookings *[]data2.Booking
-	Destinations *[]data2.Destination
-	Launch *data2.Launch
-	Launches *[]data2.Launch
+	Bookings *[]data.Booking
+	Destinations *[]data.Destination
+	Launch *data.Launch
+	Launches *[]data.Launch
 }
 
-func (r RepositoryMock) CreateLaunch(ctx context.Context, booking data2.Booking) error {
+func (r RepositoryMock) CreateLaunch(ctx context.Context, booking data.Booking) error {
 	return nil
 }
 
-func (r RepositoryMock) BookTicket(ctx context.Context, booking data2.Booking) error {
+func (r RepositoryMock) BookTicket(ctx context.Context, booking data.Booking) error {
 	return nil
 }
 
-func (r RepositoryMock) GetBookings(ctx context.Context) (*[]data2.Booking, error) {
+func (r RepositoryMock) GetBookings(ctx context.Context) (*[]data.Booking, error) {
 	return r.Bookings, nil
 }
 
-func (r RepositoryMock) GetDestinations(ctx context.Context) (*[]data2.Destination, error) {
+func (r RepositoryMock) GetDestinations(ctx context.Context) (*[]data.Destination, error) {
 	return r.Destinations, nil
 }
 
-func (r RepositoryMock) GetLaunch(ctx context.Context, date time.Time) (*data2.Launch, error) {
+func (r RepositoryMock) GetLaunch(ctx context.Context, date time.Time) (*data.Launch, error) {
 	return r.Launch, nil
 }
 
-func (r RepositoryMock) GetLaunches(ctx context.Context, from, to time.Time) (*[]data2.Launch, error) {
+func (r RepositoryMock) GetLaunches(ctx context.Context, from, to time.Time) (*[]data.Launch, error) {
 	return r.Launches, nil
 }
 
-var destinations = []data2.Destination{
-	data2.Destination{ ID: "1", Name: "Mars"},
-	data2.Destination{ ID: "2", Name: "Moon"},
-	data2.Destination{ ID: "3", Name: "Pluto"},
-	data2.Destination{ ID: "4", Name: "Asteroid Belt"},
-	data2.Destination{ ID: "5", Name: "Europa"},
-	data2.Destination{ ID: "6", Name: "Titan"},
-	data2.Destination{ ID: "7", Name: "Ganymede"},
+var destinations = []data.Destination{
+	data.Destination{ ID: "1", Name: "Mars"},
+	data.Destination{ ID: "2", Name: "Moon"},
+	data.Destination{ ID: "3", Name: "Pluto"},
+	data.Destination{ ID: "4", Name: "Asteroid Belt"},
+	data.Destination{ ID: "5", Name: "Europa"},
+	data.Destination{ ID: "6", Name: "Titan"},
+	data.Destination{ ID: "7", Name: "Ganymede"},
 						}
 
 // the target launch exists in the database, the model will book ticket for that launch
 func Test_BookTicket(t *testing.T) {
 
 	// all luanches in target week
-	launches := make([]data2.Launch, 0)
+	launches := make([]data.Launch, 0)
 
 	// target launch
-	launch_1 := data2.Launch{}
+	launch_1 := data.Launch{}
 	launch_1.ID = "1"
 	launch_1.LaunchDate = "2022-04-13"
 	launch_1.DestinationID = "3"
@@ -67,7 +68,7 @@ func Test_BookTicket(t *testing.T) {
 	launches = append(launches, launch_1)
 
 	// previous launch
-	launch_2 := data2.Launch{}
+	launch_2 := data.Launch{}
 	launch_2.ID = "1"
 	launch_2.LaunchDate = "2022-04-12"
 	launch_2.DestinationID = "4"
@@ -76,7 +77,7 @@ func Test_BookTicket(t *testing.T) {
 	launches = append(launches, launch_2)
 
 	// next launch
-	launch_3 := data2.Launch{}
+	launch_3 := data.Launch{}
 	launch_3.ID = "1"
 	launch_3.LaunchDate = "2022-04-15"
 	launch_3.DestinationID = "1"
@@ -99,10 +100,9 @@ func Test_BookTicket(t *testing.T) {
 	booking.Birthday = "1971-06-28"
 	booking.Birthday = "men"
 
-	model := model.NewModel(repository)
+	api := model.NewModel(repository)
 
-	err := model.BookTicket(&booking)
-
+	err := api.BookTicket(&booking)
 	if err != nil {
 		t.Errorf("Booking failed")
 	}
@@ -112,7 +112,7 @@ func Test_BookTicket(t *testing.T) {
 func Test_BookTicket_Fail_For_Incorrect_LuanchTime(t *testing.T) {
 
 	// all luanches in target week
-	launches := make([]data2.Launch, 0)
+	launches := make([]data.Launch, 0)
 
 	repository := RepositoryMock{}
 	repository.Launches = &launches
@@ -128,11 +128,14 @@ func Test_BookTicket_Fail_For_Incorrect_LuanchTime(t *testing.T) {
 	booking.Birthday = "1971-06-28"
 	booking.Birthday = "men"
 
-	model := model.NewModel(repository)
+	api := model.NewModel(repository)
 
-	err := model.BookTicket(&booking)
-
-	if err == nil {
-		t.Errorf("Booking should failed because the launch date is out of date")
+	err := api.BookTicket(&booking)
+	if err != nil {
+		if err == model.OutOfDateError {
+			return
+		}
 	}
+
+	t.Errorf("Booking should failed because the launch date is out of date")
 }

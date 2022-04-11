@@ -80,14 +80,18 @@ func (m *Model) BookTicket(booking *Booking) error {
 
 	launchDate, err := time.Parse(common.DateLayout, booking.LaunchDate)
 	if err != nil {
-		return fmt.Errorf("Parsing failed, layout(%v), launchDate(%v)\n", common.DateLayout, booking.LaunchDate)
+		fmt.Printf("Parsing failed, layout(%v), launchDate(%v), er(%v)\n", common.DateLayout, booking.LaunchDate, err)
+
+		return err
 	}
 
 	year, month, day := time.Now().Date()
 	today := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
 
 	if launchDate.Before(today) {
-		return fmt.Errorf("Launch date(%v) should be higher than/equal to today", booking.LaunchDate)
+		fmt.Printf("Launch date(%v) should be higher than/equal to today", booking.LaunchDate)
+
+		return OutOfDateError
 	}
 
 	launch, err := m.repository.GetLaunch(context.TODO(), launchDate)
@@ -97,14 +101,17 @@ func (m *Model) BookTicket(booking *Booking) error {
 			launchDate.Format(common.DateLayout),
 			err,
 			)
+
+		return RepositoryError
 	}
 	if launch != nil {
 		if launch.LaunchpadID == booking.LaunchpadID {
+
 			err := m.repository.BookTicket(context.TODO(), booking.Booking)
 			if err != nil {
 				fmt.Printf("Booking failed, err(%v)\n", err)
 
-				return fmt.Errorf("Booking failed, please try it later")
+				return BookingError
 			}
 
 			return nil
@@ -113,13 +120,14 @@ func (m *Model) BookTicket(booking *Booking) error {
 
 	launches, err := m.repository.GetLaunches(context.TODO(), GetStartOfWeek(launchDate), GetEndOfWeek(launchDate))
 	if err != nil {
-		return fmt.Errorf("Cannot retrieve launches, err(%v)\n", err)
+		fmt.Printf("Cannot retrieve launches, err(%v)\n", err)
+
+		return RepositoryError
 	}
 	for _, l := range *launches {
 		if l.DestinationID == booking.DestinationID {
-			return fmt.Errorf(
-				"We provide another launch to same destination at same week, please choose another date",
-				)
+
+			return DestinationUnavailableError
 		}
 	}
 
@@ -137,12 +145,13 @@ func (m *Model) BookTicket(booking *Booking) error {
 					err,
 					)
 
-				return fmt.Errorf("Unexpected error, please contact support")
+				return err
 			}
 
 			if sxlLaunchDate == launchDate {
 				if sxl.LaunchpadID == booking.LaunchpadID {
-					return fmt.Errorf("There is no available launch on selected launchpad at the launch date")
+
+					return LaunchpadUsedBySpaceXError
 				}
 			}
 		}
@@ -150,16 +159,16 @@ func (m *Model) BookTicket(booking *Booking) error {
 
 	err = m.repository.CreateLaunch(context.TODO(), booking.Booking)
 	if err != nil {
-		fmt.Printf("Cannot book ticket, err(%v)\n", err)
+		fmt.Printf("Cannot create launch, err(%v)\n", err)
 
-		return fmt.Errorf("Unexpected error, please contact support")
+		return BookingError
 	}
 
 	err = m.repository.BookTicket(context.TODO(), booking.Booking)
 	if err != nil {
 		fmt.Printf("Cannot book ticket, err(%v)\n", err)
 
-		return fmt.Errorf("Unexpected error, please contact support")
+		return BookingError
 	}
 
 	return nil
