@@ -55,6 +55,12 @@ func (s *Server) Open() bool {
 		return false
 	}
 
+	if ! s.perpareServer() {
+		fmt.Println("Cannot prepare server")
+
+		return false
+	}
+
 	return true
 }
 
@@ -63,7 +69,7 @@ func (s *Server) Close() bool {
 	return true
 }
 
-func (s *Server) init() bool {
+func (s *Server) prepareServer() bool {
 
 	return true
 }

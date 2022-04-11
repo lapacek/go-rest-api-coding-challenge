@@ -17,7 +17,7 @@ VALUES ('Mars'),
 
 INSERT INTO launch (launchpad_id, destination_id, launch_date)
 VALUES ('1', '1', '2020-11-11'),
-       ('3', 'Rimmer', '2022-01-01');
+       ('2', '3', '2022-01-01');
 
 INSERT INTO ticket (launch_id, first_name, last_name, gender, birthday)
 VALUES ('1', 'Chuck', 'Norris', 'men', '1940-03-10'),
