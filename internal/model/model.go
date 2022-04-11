@@ -65,7 +65,9 @@ func (m *Model) AllBookings() (*[]Booking, error) {
 
 	bookings, err := m.repository.GetBookings(context.TODO())
 	if err != nil {
-		return nil, fmt.Errorf("Cannot retrieve bookings, err(%v)\n", err)
+		fmt.Printf("Cannot retrieve bookings, err(%v)\n", err)
+
+		return nil, RepositoryError
 	}
 	results := make([]Booking, len(*bookings), 0)
 
