@@ -5,9 +5,9 @@ type Booking struct {
 	LastName      string
 	Gender        string
 	Birthday      string
-	LaunchpadID   string
-	DestinationID string
+	LaunchpadID   int
+	DestinationID int
 	LaunchDate    string
 
-	LaunchID      string
+	LaunchID      int
 }

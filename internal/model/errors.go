@@ -11,4 +11,6 @@ var (
 	OutOfDateError             = errors.New("Cannot book ticket to the history")
 
 	DataLayerError = errors.New("Cannot retrieve data, please contact support")
+
+	LogicError = errors.New("Something gone wrong, please contact support")
 )

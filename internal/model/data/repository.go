@@ -73,7 +73,7 @@ func (r Repository) GetDestinations(ctx context.Context) (*[]Destination, error)
 	for rows.Next() {
 		var item Destination
 
-		err := rows.Scan(&item)
+		err := rows.Scan(&item.ID, &item.Name)
 		if err != nil {
 			fmt.Println("Cannot scan destination from db row")
 
@@ -98,9 +98,13 @@ func (r Repository) GetBookings(ctx context.Context) (*[]Booking, error) {
 	results := make([]Booking, 0)
 
 	for rows.Next() {
+
 		var item Booking
 
-		err := rows.Scan(&item)
+		err := rows.Scan(&item.FirstName, &item.LastName, &item.Gender,
+						&item.Birthday, &item.LaunchpadID, &item.DestinationID,
+						&item.LaunchDate,
+						)
 		if err != nil {
 			fmt.Println("Cannot scan booking from db row")
 
@@ -130,7 +134,7 @@ func (r Repository) GetLaunches(ctx context.Context, from, to time.Time) (*[]Lau
 	for rows.Next() {
 		var item Launch
 
-		err := rows.Scan(&item)
+		err := rows.Scan(&item.ID, &item.LaunchpadID, &item.DestinationID, &item.LaunchDate)
 		if err != nil {
 			fmt.Println("Cannot scan launch from db row")
 
@@ -151,7 +155,7 @@ func (r Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, err
 
 	var item Launch
 
-	err := row.Scan(&item)
+	err := row.Scan(&item.ID, &item.LaunchpadID, &item.DestinationID, &item.LaunchDate)
 	if err != nil {
 		fmt.Println("Cannot scan launch from db row")
 
@@ -161,13 +165,13 @@ func (r Repository) GetLaunch(ctx context.Context, date time.Time) (*Launch, err
 	return &item, nil
 }
 
-func (r Repository) GetLaunchpad(ctx context.Context, launchpadId string) (*LaunchPad, error) {
+func (r Repository) GetLaunchpad(ctx context.Context, launchpadId int) (*LaunchPad, error) {
 
 	row := r.db.QueryRow(ctx, SELECT_LAUNCHPAD, launchpadId)
 
 	var item LaunchPad
 
-	err := row.Scan(&item)
+	err := row.Scan(&item.ID, &item.IDSpaceX)
 	if err != nil {
 		fmt.Println("Cannot scan launchpad from db row")
 

@@ -19,11 +19,13 @@ COPY .env .
 WORKDIR /app/cmd
 
 # Download all the dependencies
+RUN go mod tidy
 RUN go get -d -v ./...
 
 WORKDIR /app/internal
 
 # Run tests
+RUN go mod tidy
 RUN go test -v ./...
 
 WORKDIR /app/cmd

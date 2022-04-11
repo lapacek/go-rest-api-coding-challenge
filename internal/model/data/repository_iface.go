@@ -13,5 +13,5 @@ type RepositoryIface interface {
 	GetDestinations(ctx context.Context) (*[]Destination, error)
 	GetLaunch(ctx context.Context, date time.Time) (*Launch, error)
 	GetLaunches(ctx context.Context, from, to time.Time) (*[]Launch, error)
-	GetLaunchpad(ctx context.Context, launchpadId string) (*LaunchPad, error)
+	GetLaunchpad(ctx context.Context, launchpadId int) (*LaunchPad, error)
 }

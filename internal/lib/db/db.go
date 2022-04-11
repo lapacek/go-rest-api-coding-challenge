@@ -3,10 +3,12 @@ package db
 import (
 	"context"
 	"fmt"
+
 	"github.com/lapacek/simple-api-example/internal/common"
 
 	"github.com/gookit/config/v2"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -31,7 +33,7 @@ type DB struct {
 	opened  bool
 
 	conf *config.Config
-	conn *pgx.Conn
+	connPool *pgxpool.Pool
 }
 
 func NewDB(conf *config.Config) *DB {
@@ -50,13 +52,12 @@ func (db *DB) Open() bool {
 	}
 
 	var err error
-	db.conn, err = pgx.Connect(context.Background(), db.connStr)
+	db.connPool, err = pgxpool.Connect(context.Background(), db.connStr)
 	if err != nil {
 		fmt.Printf("Cannot connect to database, err(%v)\n", err)
 
 		return false
 	}
-	defer db.Close()
 
 	db.opened = true
 	fmt.Println("Database connected")
@@ -71,27 +72,22 @@ func (db *DB) Close() bool {
 		return true
 	}
 
-	err := db.conn.Close(context.Background())
-	if err != nil {
-		fmt.Printf("Cannot close database, err(%v)\n", err)
-
-		return false
-	}
+	db.connPool.Close()
 	db.opened = false
 
 	return true
 }
 
 func (db *DB) Query(ctx context.Context, sql string, args ...interface{}) (Rows, error) {
-	return db.conn.Query(ctx, sql, args...)
+	return db.connPool.Query(ctx, sql, args...)
 }
 
 func (db *DB) QueryRow(ctx context.Context, sql string, args ...interface{}) Row {
-	return db.conn.QueryRow(ctx, sql, args...)
+	return db.connPool.QueryRow(ctx, sql, args...)
 }
 
 func (db *DB) Begin(ctx context.Context) (Tx, error) {
-	return db.conn.Begin(ctx)
+	return db.connPool.Begin(ctx)
 }
 
 func (db *DB) Rollback(ctx context.Context, tx Tx) error {
@@ -134,7 +130,7 @@ func (db *DB) ping() bool {
 		return false
 	}
 
-	err := db.conn.Ping(context.Background())
+	err := db.connPool.Ping(context.Background())
 	if err != nil {
 		fmt.Printf("Ping failed, err(%v)\n", err)
 

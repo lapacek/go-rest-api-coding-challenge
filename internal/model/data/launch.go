@@ -1,8 +1,8 @@
 package data
 
 type Launch struct {
-	ID string
-	LaunchpadID string
-	DestinationID string
+	ID int
+	LaunchpadID int
+	DestinationID int
 	LaunchDate string
 }

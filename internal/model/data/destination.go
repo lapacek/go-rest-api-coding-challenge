@@ -1,6 +1,6 @@
 package data
 
 type Destination struct {
-	ID string
+	ID int
 	Name string
 }

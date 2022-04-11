@@ -17,7 +17,7 @@ const SELECT_DESTINATIONS string = "SELECT id, name FROM destination"
 const SELECT_LAUNCHPAD string = "SELECT id, id_spacex FROM launchpads WHERE id = $1"
 
 const SELECT_BOOKINGS string = "SELECT t.first_name, t.last_name, t.gender, t.birthday, " +
-								"l.launchpad_id, l.destination_id, l.launch_date" +
-								"FROM ticket t " +
-								"JOIN launch l ON t.launch_id = l.id"
+								"l.launchpad_id, l.destination_id, l.launch_date " +
+								"FROM ticket AS t " +
+								"JOIN launch AS l ON t.launch_id = l.id"
 

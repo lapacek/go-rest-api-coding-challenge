@@ -1,8 +1,8 @@
 package data
 
 type Ticket struct {
-	ID string
-	LaunchID string
+	ID int
+	LaunchID int
 	FirstName string
 	LastName string
 	Gender string

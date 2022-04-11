@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/lapacek/simple-api-example/internal/model/data"
 	"github.com/lapacek/simple-api-example/internal/common"
+	"github.com/lapacek/simple-api-example/internal/model/data"
 )
 
 type Model struct {
@@ -32,12 +32,16 @@ func (m *Model) Open() bool {
 	defer func() {
 		if !failed {
 			fmt.Println("Model started")
+
+			return
 		}
+
+		fmt.Println("Model start failed")
 	}()
 
-	failed = m.loadDestinations()
+	failed = ! m.loadDestinations()
 
-	return failed
+	return ! failed
 }
 
 func (m *Model) Close() bool {
@@ -72,7 +76,7 @@ func (m *Model) BookTicket(booking *Booking) error {
 	if err != nil {
 		fmt.Printf("Parsing failed, layout(%v), launchDate(%v), er(%v)\n", common.DateLayout, booking.LaunchDate, err)
 
-		return err
+		return LogicError
 	}
 
 	year, month, day := time.Now().Date()
@@ -141,7 +145,7 @@ func (m *Model) BookTicket(booking *Booking) error {
 					err,
 					)
 
-				return err
+				return LogicError
 			}
 
 			lauchpad, err := m.repository.GetLaunchpad(context.TODO(), booking.LaunchpadID)

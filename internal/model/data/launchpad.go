@@ -1,6 +1,6 @@
 package data
 
 type LaunchPad struct {
-	ID string
+	ID int
 	IDSpaceX string
 }
