@@ -15,8 +15,9 @@ I decided to build a service from scratch with minimum third-party libraries.
 I had to pause my work after 48 hours, unfortunately. The result is tagged by `2_days_of_dev` git tag.
 
 What remains:
-* implement SpaceX HTTP client request
-* implement a delete booking endpoint `(last remaining bonus point)`
+
+ - [ ] https://github.com/lapacek/go-rest-api-coding-challenge/issues/1 implement SpaceX HTTP client request
+ - [ ] https://github.com/lapacek/go-rest-api-coding-challenge/issues/2 implement a delete booking endpoint `(last remaining bonus point)`
 
 Estimate: 5 hours remains to finish
 
