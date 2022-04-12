@@ -6,7 +6,7 @@ This is the raw software or naive implementation we can say, therefore this code
 
 ## motivation
 
-There was a chance to try a coding challenge with `72 hours time limit.
+There was a chance to try a coding challenge with `72 hours` time limit.
 
 ## conclusion
 
