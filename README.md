@@ -2,7 +2,7 @@
 
 ## warning
 
-This is the naive implementation, therefore this code should not be used in production environment. There is no warranty.
+This is the raw software or naive implementation we can say, therefore this code should not be used in a production environment. There is no warranty.
 
 ## motivation
 
