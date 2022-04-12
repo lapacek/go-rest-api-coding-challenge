@@ -10,7 +10,7 @@ There was a chance to try a coding challenge with `72 hours` time limit.
 
 ## conclusion
 
-Focus on clean code & clean design principles and best practices and work quality was the most important factor for me.
+Focus on clean code & clean design principles and best practices was the most important factor for me.
 I decided to build a service from scratch with minimum third-party libraries. Just for fun.
 Unfortunatelly, I had to pause my work after 48 hours. 
 The result is tagged by `2_days_of_dev` git tag.
